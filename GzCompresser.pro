@@ -17,3 +17,5 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 INCLUDEPATH += $$[QT_INSTALL_HEADERS]/QtZlib
 LIBS += -L/usr/local/opt/zlib/lib -lz
+
+HEADERS +=
