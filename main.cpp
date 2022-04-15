@@ -123,7 +123,7 @@ inline unsigned long calculateCrc32(const QByteArray &data) {
     return crc;
 }
 
-QByteArray gzipCompress(const QByteArray &data) {
+QByteArray gzCompress(const QByteArray &data) {
     const char header[10] = {
         0x1f, static_cast<char>(0x8b),	// ID1 + ID2
         8,			// Compression Method
@@ -159,7 +159,7 @@ void compressFile(const QString &sourcePath, const QString &destinationPath) {
         }
         sFile.close();
 
-        QByteArray destinationData = gzipCompress(sourceData);
+        QByteArray destinationData = gzCompress(sourceData);
         QFile dFile(destinationPath);
         if (dFile.open(QIODevice::WriteOnly)) {
             dFile.write(destinationData);
@@ -172,15 +172,15 @@ void compressFile(const QString &sourcePath, const QString &destinationPath) {
 int main(int argc, char *argv[]) {
     QCoreApplication a(argc, argv);
 
-        std::string rootPath;
-        std::cout << "enter the directory containing the files to be compressed:" << std::endl;
-        std::cin >> rootPath;
+    std::string rootPath;
+    std::cout << "enter the directory containing the files to be compressed:" << std::endl;
+    std::cin >> rootPath;
 
-        QDir rootDir(QString::fromStdString(rootPath));
-        QString destinationDirPath;
-        QString destinationDirName = "results";
-        if (rootDir.mkdir(destinationDirName))
-            destinationDirPath = rootDir.absolutePath() + QDir::separator() + destinationDirName;
+    QDir rootDir(QString::fromStdString(rootPath));
+    QString destinationDirPath;
+    QString destinationDirName = "results";
+    if (rootDir.mkdir(destinationDirName)) {
+        destinationDirPath = rootDir.absolutePath() + QDir::separator() + destinationDirName;
         QFileInfoList fileInfoList = rootDir.entryInfoList(QDir::Dirs | QDir::Files | QDir::NoSymLinks
                                                            | QDir::NoDot | QDir::NoDotDot);
         for (auto &fileInfo : fileInfoList) {
@@ -190,10 +190,7 @@ int main(int argc, char *argv[]) {
             qDebug() << sourcePath << destinationPath;
             compressFile(sourcePath, destinationPath);
         }
-
-//    QString sourcePath = "C:\\Users\\Michael\\Desktop\\S_D_20130320.txt";
-//    QString destinationPath = "C:\\Users\\Michael\\Desktop\\S_D_20130320.txt";
-//    compressFile(sourcePath, destinationPath);
+    }
 
     return a.exec();
 }
