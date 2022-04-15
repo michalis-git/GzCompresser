@@ -2,6 +2,7 @@
 #include <QDataStream>
 #include <QFile>
 #include <iostream>
+#include <QDebug>
 #include "zlib.h"
 
 
@@ -92,6 +93,74 @@ QByteArray compress(const QByteArray& data) {
 //  compressedData.remove(0, 1);
   return header + compressedData + footer;
 }
+
+QByteArray gzipCompress(QByteArray &compressData )
+{
+  //strip header
+//  compressData.remove(0, 10);
+
+  const int buffer_size = 16384;
+  quint8 buffer[buffer_size];
+
+  z_stream cmpr_stream;
+  cmpr_stream.next_in = (unsigned char *)compressData.data();
+  cmpr_stream.avail_in = compressData.size();
+  cmpr_stream.total_in = 0;
+
+  cmpr_stream.next_out = buffer;
+  cmpr_stream.avail_out = buffer_size;
+  cmpr_stream.total_out = 0;
+
+  cmpr_stream.zalloc = Z_NULL;
+  cmpr_stream.zfree = Z_NULL;
+  cmpr_stream.opaque = Z_NULL;
+
+z_stream strm;
+unsigned char* in = (unsigned char *)compressData.data();
+
+strm.zalloc = Z_NULL;
+strm.zfree = Z_NULL;
+strm.opaque = Z_NULL;
+strm.next_in = in;
+
+int windowsBits = 15;
+int GZIP_ENCODING = 16;
+
+int status = deflateInit2 (&strm, Z_DEFAULT_COMPRESSION, Z_DEFLATED,
+              windowsBits | GZIP_ENCODING,
+              8,
+              Z_DEFAULT_STRATEGY);
+
+  if (status != Z_OK) {
+    qDebug() << "cmpr_stream error!";
+  }
+
+  QByteArray compressed;
+  do {
+    cmpr_stream.next_out = buffer;
+    cmpr_stream.avail_out = buffer_size;
+
+    status = inflate( &cmpr_stream, Z_NO_FLUSH );
+
+    if (status == Z_OK || status == Z_STREAM_END) {
+      QByteArray chunk = QByteArray::fromRawData((char *)buffer, buffer_size - cmpr_stream.avail_out);
+      uncompressed.append( chunk );
+    } else {
+      inflateEnd(&cmpr_stream);
+      break;
+    }
+
+    if (status == Z_STREAM_END) {
+      inflateEnd(&cmpr_stream);
+      break;
+    }
+  }
+  while (cmpr_stream.avail_out == 0);
+
+  return uncompressed;
+}
+
+
 void gzCompress(const QString &sourcePath, const QString &destinationPath) {
   QFile sourceFile(sourcePath);
 
