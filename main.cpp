@@ -89,45 +89,34 @@ QByteArray compress(const QByteArray& data) {
   ds2 << crc32buf(data)
       << quint32(data.size());
 
+//  compressedData.remove(0, 1);
   return header + compressedData + footer;
 }
 void gzCompress(const QString &sourcePath, const QString &destinationPath) {
   QFile sourceFile(sourcePath);
-  QByteArray sourceData;
 
-//  if (sourceFile.open(QIODevice::ReadOnly)) {
-//    QDataStream in1(&sourceFile);
-//    while(!in1.atEnd()) {
-//      char *c = new char[1];
-//      in1.readRawData(c,1);
-//      sourceData.push_back(*c);
-//      delete []c;
-//    }
-//    sourceFile.close();
-//  }
   QFile destFile(destinationPath);
   if(sourceFile.open(QIODevice::ReadOnly)){
-    QByteArray ba;
-    QDataStream ds(&ba, QIODevice::ReadWrite);
+    QByteArray sourceData;
+    QDataStream ds(&sourceData, QIODevice::ReadWrite);
     ds << sourceFile.readAll();
-    QByteArray compressedData = compress(ba);
+    QByteArray compressedData = compress(sourceData);
+//    compressedData.remove(0, 4);
     if (destFile.open(QIODevice::ReadWrite)) {
     destFile.write(compressedData);
     destFile.flush();
     }
   }
 
-//  QByteArray compressedData = compress(sourceData);
-//  gzFile fi = gzopen(destinationPath,"wb");
-//  gzwrite(fi, compressedData, strlen(compressedData));
-//  gzclose(fi);
 }
 
 int main(int argc, char *argv[]) {
   QCoreApplication a(argc, argv);
 
-  QString sourcePath =      "/Users/mikeo/S_D_20141230.txt";
-  const QString &destinationPath = "/Users/mikeo/S_D_20141230.txt.gz";
+//  QString sourcePath =      "/Users/mikeo/S_D_20141230.txt";
+//  const QString &destinationPath = "/Users/mikeo/S_D_20141230.txt.gz";
+  QString sourcePath =      "/Users/mikeo/test.txt";
+  const QString &destinationPath = "/Users/mikeo/test.txt.gz";
   gzCompress(sourcePath, destinationPath);
 
 
