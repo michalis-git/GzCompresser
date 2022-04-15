@@ -108,13 +108,16 @@ inline QByteArray render32BitInt(unsigned long value)
     data[1] = (value >>  8) & 255;
     data[2] = (value >> 16) & 255;
     data[3] = (value >> 24) & 255;
-    return QByteArray((char *)data, 4);
+    return QByteArray(reinterpret_cast<char *>(data), 4);
 }
 
 inline unsigned long calculateCrc32(const QByteArray &data) {
+    char *cData = const_cast<char *>(data.data());
     crc_t crc;
     crc = 0xffffffff;
-    crc = crc_update(crc, (unsigned char *)data.data(), data.size());
+    crc = crc_update(crc,
+                     reinterpret_cast<unsigned char *>(cData),
+                     static_cast<unsigned int>(data.size()));
     crc = crc ^ 0xffffffff;
     return crc;
 }
@@ -137,7 +140,7 @@ QByteArray gzipCompress(const QByteArray &data) {
     result.append(header, 10);
     result.append(compressedData);
     result.append(render32BitInt(calculateCrc32(data)));
-    result.append(render32BitInt(data.size()));
+    result.append(render32BitInt(static_cast<unsigned long>(data.size())));
     return result;
 }
 
